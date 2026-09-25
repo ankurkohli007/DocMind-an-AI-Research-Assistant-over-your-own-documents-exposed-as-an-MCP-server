@@ -1,0 +1,11 @@
+INFO:     Will watch for changes in these directories: ['/Users/ankurkohli007/Documents/claude_code/DocMind/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [86495] using WatchFiles
+INFO:     Started server process [86498]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61783 - "POST /api/v1/documents/ HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61857 - "POST /api/v1/documents/ HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61889 - "POST /api/v1/documents/ HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61899 - "POST /api/v1/documents/ HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:61917 - "POST /api/v1/documents/ HTTP/1.1" 500 Internal Server Error
