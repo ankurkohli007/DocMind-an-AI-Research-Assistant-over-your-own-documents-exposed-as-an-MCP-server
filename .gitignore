@@ -16,6 +16,8 @@ __pycache__/
 .venv/
 venv/
 env/
+*.egg-info/
+.pytest_cache/
 
 # macOS
 .DS_Store
@@ -29,3 +31,12 @@ coverage/
 # IDE
 .vscode/
 .idea/
+
+# Uploaded/temp files (don't commit test PDFs or scratch data)
+uploaded_files/
+backend/uploaded_files/
+*.pdf
+!frontend/public/**/*.pdf
+
+# Logs
+*.log
