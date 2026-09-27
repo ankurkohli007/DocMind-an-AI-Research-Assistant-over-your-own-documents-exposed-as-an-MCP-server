@@ -7,7 +7,7 @@ app = FastAPI(title="DocMind API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://doc-mind-an-ai-research-assistant-over-your-own-docu-eterj3rob.vercel.app"],
+    allow_origins=["https://doc-mind-an-ai-research-assistant-o.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
