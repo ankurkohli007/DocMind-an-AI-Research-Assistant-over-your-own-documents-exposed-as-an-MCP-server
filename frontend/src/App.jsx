@@ -55,6 +55,7 @@ function App() {
           <DocumentSidebar
             documents={documents}
             onRefresh={fetchDocuments}
+            backendUrl={BACKEND_URL}
           />
         </aside>
 

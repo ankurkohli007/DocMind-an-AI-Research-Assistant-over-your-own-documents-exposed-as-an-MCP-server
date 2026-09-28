@@ -1,66 +1,26 @@
-"""MCP Server for DocMind - exposes search and QA tools via MCP protocol."""
+"""MCP Server for DocMind - thin client over the deployed DocMind API."""
 
-import sys
-from pathlib import Path
+import os
 
-# Add project root to path for core module imports
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
+import httpx
 from mcp.server.fastmcp import FastMCP
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from app.core.config import settings
-from app.db.base import Base
-from app.db.models import Chunk, Document
-from core.qa import answer_query
-from core.retrieval import search_chunks
+API_URL = os.getenv(
+    "DOCMIND_API_URL",
+    "https://docmind-an-ai-research-assistant-over.onrender.com",
+).rstrip("/")
 
+# Render's free tier can take a while to wake up after being idle.
+TIMEOUT = httpx.Timeout(120.0)
 
-# Create database engine and session maker
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DB_ECHO,
-    connect_args={"statement_cache_size": 0},
-)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
-
-
-async def get_db_session():
-    """Get a database session for MCP tools."""
-    async with async_session_maker() as session:
-        yield session
-
-
-# Initialize MCP server
 mcp = FastMCP("docmind")
 
 
-@mcp.tool()
-async def search_documents(query: str) -> dict:
-    """Search for document chunks similar to the query using cosine similarity.
-
-    Args:
-        query: Search query text.
-
-    Returns:
-        Dictionary with 'results' list containing chunks with source document filename and similarity score.
-    """
-    async with async_session_maker() as db:
-        matches = await search_chunks(query, db, top_k=5)
-
-        results = []
-        for chunk, document, similarity in matches:
-            results.append({
-                "chunk_id": chunk.id,
-                "document_id": document.id,
-                "filename": document.filename,
-                "content": chunk.content,
-                "chunk_index": chunk.chunk_index,
-                "similarity_score": round(similarity, 4),
-            })
-
-        return {"results": results, "count": len(results)}
+async def _request(method: str, path: str, **kwargs) -> dict:
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        response = await client.request(method, f"{API_URL}{path}", **kwargs)
+        response.raise_for_status()
+        return response.json()
 
 
 @mcp.tool()
@@ -73,16 +33,33 @@ async def ask_documents(question: str) -> dict:
     Returns:
         Dictionary with 'answer' text and 'citations' list.
     """
-    async with async_session_maker() as db:
-        answer, citations = await answer_query(question, db)
+    return await _request("POST", "/api/v1/queries/", json={"question": question})
 
-        return {
-            "question": question,
-            "answer": answer,
-            "citations": citations,
-        }
+
+@mcp.tool()
+async def search_documents(query: str) -> dict:
+    """Find the passages in uploaded documents most relevant to a query.
+
+    Args:
+        query: Search query text.
+
+    Returns:
+        Dictionary with matching passages (filename, snippet, similarity score).
+    """
+    data = await _request("POST", "/api/v1/queries/", json={"question": query})
+    results = data.get("citations", [])
+    return {"query": query, "results": results, "count": len(results)}
+
+
+@mcp.tool()
+async def list_documents() -> dict:
+    """List all documents that have been uploaded.
+
+    Returns:
+        Dictionary with the list of uploaded documents.
+    """
+    return await _request("GET", "/api/v1/documents/")
 
 
 if __name__ == "__main__":
-    # Run the MCP server via stdio
     mcp.run()

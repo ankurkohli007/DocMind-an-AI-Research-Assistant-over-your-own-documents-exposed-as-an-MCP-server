@@ -1,4 +1,17 @@
-function DocumentSidebar({ documents, onRefresh }) {
+function DocumentSidebar({ documents, onRefresh, backendUrl }) {
+  const handleDelete = async (doc) => {
+    if (!window.confirm(`Delete "${doc.filename}"? This can't be undone.`)) return
+    try {
+      const res = await fetch(`${backendUrl}/api/v1/documents/${doc.id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error('Delete failed')
+      onRefresh()
+    } catch (err) {
+      alert('Could not delete the document. Please try again.')
+    }
+  }
+
   if (!documents || documents.length === 0) {
     return (
       <div className="document-sidebar">
@@ -36,6 +49,14 @@ function DocumentSidebar({ documents, onRefresh }) {
                 </span>
               )}
             </div>
+            <button
+              onClick={() => handleDelete(doc)}
+              className="btn-delete"
+              title="Delete document"
+              aria-label={`Delete ${doc.filename}`}
+            >
+              ✕
+            </button>
           </li>
         ))}
       </ul>

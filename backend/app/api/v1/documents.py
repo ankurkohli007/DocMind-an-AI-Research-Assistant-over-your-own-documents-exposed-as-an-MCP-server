@@ -1,6 +1,8 @@
 import sys
 import tempfile
 from pathlib import Path
+from sqlalchemy import delete, select
+from app.db.models import Chunk, Document
 
 # Add project root to path for core module
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
@@ -93,5 +95,11 @@ async def get_document(document_id: int):
 
 
 @router.delete("/{document_id}")
-async def delete_document(document_id: int):
-    return {"message": "Document deleted"}
+async def delete_document(document_id: int, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(Document, document_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    await db.execute(delete(Chunk).where(Chunk.document_id == document_id))
+    await db.delete(doc)
+    await db.commit()
+    return {"message": f"Deleted {doc.filename}", "document_id": document_id}
