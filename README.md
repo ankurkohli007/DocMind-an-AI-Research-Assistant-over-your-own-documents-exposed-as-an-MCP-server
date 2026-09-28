@@ -36,6 +36,8 @@ Reading through long PDFs to find one answer is slow, and generic AI chatbots ei
 [Claude Desktop / any MCP client]
 ```
 
+![Full architecture](architecture_img/docmind_full_architecture.png)
+
 Two client surfaces (the web frontend, and the MCP server) both go through the same FastAPI backend and the same database. A document uploaded through the web app is immediately answerable through the MCP tools, and vice versa, because there is exactly one source of truth: the Postgres database.
 
 ### Why the MCP server calls the API instead of the database directly
@@ -81,6 +83,8 @@ DocMind uses **naive (single-hop) RAG**, not Graph RAG, not multi-hop/agentic RA
 
 **Why naive RAG and not Graph RAG:** Graph RAG builds an explicit knowledge graph of entities and relationships extracted from documents, and answers by traversing that graph — it's stronger for multi-hop reasoning across many interconnected documents ("how does concept A in document 1 relate to concept B in document 3") but is significantly more expensive to build (an extra LLM-driven entity/relationship extraction pass over every document) and unnecessary for DocMind's actual use case: answering questions grounded in one or a few documents at a time, where direct semantic-similarity retrieval already finds the right passages. Naive RAG is the right tool for "what does this document say about X", not a lesser choice for lack of sophistication — knowing when *not* to reach for a heavier architecture is itself part of the design decision, worth being able to explain as such.
 
+![RAG pipeline](architecture_img/docmind_rag_pipeline.png)
+
 **A known limitation, worth raising directly:** retrieval currently searches across *all* uploaded documents with no way to scope a question to a single one. A generic question like "what is this paper about?" with several unrelated PDFs uploaded returns a poor answer, because there's no "current document" concept, only a global similarity search. The fix is a straightforward one — adding an optional `document_id` filter to the retrieval query and the API/MCP tool signatures — but it's not implemented yet, and is listed under "what I'd build next" below.
 
 ---
@@ -94,6 +98,8 @@ DocMind uses **naive (single-hop) RAG**, not Graph RAG, not multi-hop/agentic RA
 ---
 
 ## MCP tools exposed
+
+![MCP architecture](architecture_img/docmind_mcp_architecture.png)
 
 | Tool | What it does |
 |---|---|
