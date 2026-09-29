@@ -3,7 +3,7 @@
 DocMind lets you upload your own PDFs and ask questions about them, getting answers grounded in the actual text with citations back to the source — not a hallucinated summary. The same retrieval and answering logic is also exposed as an **MCP (Model Context Protocol) server**, so an AI client like Claude Desktop can search and query your documents directly as a tool, not just through a web chat window.
 
 **Live demo:** [Document Upload UI](https://doc-mind-an-ai-research-assistant-o.vercel.app/) <br>
-**API docs:** [Backend Test](https://docmind-an-ai-research-assistant-over.onrender.com//docs)
+**API docs:** [Backend Test](https://docmind-an-ai-research-assistant-over.onrender.com/docs)
 
 ---
 
